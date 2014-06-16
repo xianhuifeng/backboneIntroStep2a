@@ -1,0 +1,117 @@
+<html>
+  <head>
+    <script src="jquery.js"></script>
+  	<script src="underscore.js"></script>
+  	<script src="backbone.js"></script>
+  </head>
+  <body>
+  	<script>
+  	  //Fill in the model below with the functions that we will need to make changes to the object as well as set the initial values. 
+
+      var Comment = Backbone.Model.extend({
+        //in this initialize function, we are taking a message argument, this means that later, when we say 'new Comment', we will be able to pass it an argument and have that available here.  For example, in this case, we will later be instantiating the Comment class like this: new Comment('my message')
+        initialize: function(message){
+          //set the initial values for 'votes' to 0 and 'message' to the message passed in
+        },
+        votes: function(){
+          //return the votes attribute on this model.  Stuck?  check out http://backbonejs.org/#Model-get
+        },
+        upvote: function(){
+          //write a function that will set the 'votes' to the current votecount plus one.  Stuck?  check out http://backbonejs.org/#Model-set
+        }
+        //write the downvote function, don't forget to add a comma above if you are adding a new function in this object.  It should be pretty similar to the function above.
+      });
+
+      //ok, now we have the model, but we are going to get into Backbone views.  Frequently, backbone views are going to be the place where you register event listeners and rerender something if one of your models changes.  Makes sense, right?  You would want to re-draw the comment on the page if the comment object changes.  Lets dive into how to make that happen.
+
+      //Just like we created a Comment class by extending Backbone.Model, we are going to extend Backbone.View
+      var CommentView = Backbone.View.extend({
+        //In our initialize function, we are going to define methods that we want available on ALL instances of this class.  In our case, we are going to want every comment's view to have an event listener that will re-render itself if the 'votes' attribute changes.
+        initialize: function(){
+          //Let's break down the line below
+          //this => the CommentView
+          //this.model => the model associated with this view.  We havent set this yet, and will set it later, but what would you guess the model to be that we are going to put in later?  check out answers 1 to find out.
+          //this.model.on => registers the event listener
+          //this.model.on('change:votes', => first argument lets the event listener know what to listen for 
+          this.model.on('change:votes', function(){
+            //the line below says to call the render method on whatever 'this' is bound to.  In this case this would normally be some random thing (because we are inside an anonymous function, and so we don't know when call time is or where call time is), but backbone allows us to get around this problem.  Basically it allows us to put a third argument into our event listener to redefine what the keyword 'this' is going to refer to.
+            this.render();
+
+            //so in the line below here, that is what we do, we pass in 'this' from the the outer scope into the event listener, and it makes it so that 'this' is going to be bound to the individual comment's view, and not some random thing.  A bit complicated, eh?  pull over a teacher if this just blew your mind.
+          }, this);
+        },
+
+        //so right above here, we defined an event listener that would call the 'render' method in some condition, here is the actual render method.  Let's dive in.
+        render: function(){
+          //Same as before, we are going to define a template of sorts.  The basic outline of what a comment would look like, but with some bits that are changeable.  In the lines below, what are the parts of the template that will change?  check out answer 2.
+          var html = "<div>" +
+                       "<span class='votes'>" + this.model.get('votes') + " <span>" +
+                       "<span class='comment'>" + this.model.get('message') + "</span>" +
+                       "</br>" +
+                     "</div>"; 
+
+          // Now we get into a bit of complicated Backbone stuff.  Backbone has this container element that they refer to as $el.  This container is a bucket for the html of a particular view.  It is always called $el.  If you modify the $el, the html on the page will be changed.  Each view will have it's own $el, and you can get to a view's $el inside of the view like this: 'this.$el'
+
+          //So we are going to set the html of the $el to the html we defined above:
+          return this.$el.html(html);
+
+          //but why do we return it if it updates when we modify it, why not just modify it and have it change the page?  Because it is not on the page yet.  In a couple lines, you will see us put it onto the page, and then we will modify it using the $el modification idea, but we need to get it onto the page first, and so we need to return the html so we can append it to something (the body, in this case).
+        }
+      });
+
+      //ok.  You have pretty much built everything, let's take it for a spin.
+      //first we need to create a new comment model using the Comment class.  Notice we pass the message as an argument.  Remember when we predicted that we would want to do this above?
+      var comment = new Comment('This is a message');
+
+      //We also are going to create a view to go along with the model.  So, similar to creating the model, we instantiate an instance of the CommentView class.  Notice we pass it an object {model: comment}.  This is called an options hash.  With views, if we pass an object with some information that the view expects, we can modify things about the view.  In this case, this is the way that we let a view know what model it is going to be associated with.  
+
+      //So passing {model: TheBackboneModelWeWantTheViewToBeAssociatedWith}  will associate that model with the view we are creating.  In this case we are going to associate the model that we created in the previous line, 'comment'.  NOTE: you cant just put any object in there, it MUST be a Backbone model.
+      var commentView = new CommentView({model: comment});
+      
+      //this is the spot where we actually put the view on the page.  This is why we had to return from the render function in the commentView.  Uncomment the line below to get the stuff on the page!
+
+      //$('body').append(commentView.render());
+
+      //Here the number of votes should be 0.  We set that as the initial default value in the comment model.  Let's change it and see our eventlistener in action.  uncomment the line below and reload the page, it should now say '1' to the left of the comment. 
+      //comment.upvote();
+
+      //play with this in your console.  You can modify the comment object in the same way we just did, comment.upvote() or comment.downvote().  Try voting up and voting down a couple times and watch the eventlistener auto update the view.  Pretty cool, eh?
+
+  	</script>
+  </body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!--
+  Answers
+  1.  A CommentView's model is going to be an instance of the Comment class
+  2.  this.model.get('votes') and this.model.get('message')
+
+-->
+
+
+
+
+
+
